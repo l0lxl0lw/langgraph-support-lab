@@ -1,3 +1,10 @@
+import {
+  buildGraphState,
+  getMockClassification,
+  getMockResponse,
+  selectRoute,
+} from "./workflow-logic.mjs";
+
 const form = document.querySelector("#ticket-form");
 const ticketInput = document.querySelector("#ticket");
 const apiKeyInput = document.querySelector("#api-key");
@@ -9,11 +16,39 @@ const categoryOutput = document.querySelector("#category");
 const confidenceOutput = document.querySelector("#confidence");
 const routeOutput = document.querySelector("#route");
 const draftOutput = document.querySelector("#draft-response");
+const traceOutput = document.querySelector("#trace");
+const executionModeOutput = document.querySelector("#execution-mode");
 const errorOutput = document.querySelector("#error-message");
 const runButton = form.querySelector(".run-button");
-const nodes = ["receive-node", "classify-node", "route-node", "resolve-node"].map(
+const trunkNodes = ["receive-node", "classify-node", "route-node"].map(
   (id) => document.querySelector(`#${id}`),
 );
+const respondNode = document.querySelector("#respond-node");
+const escalateNode = document.querySelector("#escalate-node");
+const allNodes = [...trunkNodes, respondNode, escalateNode];
+let selectedCase = null;
+
+const wait = (milliseconds) =>
+  new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+
+function setNodeExecuted(node) {
+  const status = node.querySelector("span");
+  status.dataset.readyLabel ||= status.textContent;
+  status.textContent = "Executed";
+  node.classList.add("executed");
+}
+
+function resetGraph() {
+  allNodes.forEach((node) => {
+    const status = node.querySelector("span");
+    node.classList.remove("executed");
+    if (status.dataset.readyLabel) status.textContent = status.dataset.readyLabel;
+  });
+}
+
+function setRunButtonLabel(label) {
+  runButton.firstChild.textContent = `${label} `;
+}
 
 async function callOpenRouter(apiKey, model, messages, responseFormat) {
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -110,9 +145,27 @@ async function draftResponse(apiKey, model, ticket, classification, route) {
 
 document.querySelectorAll("[data-ticket]").forEach((button) => {
   button.addEventListener("click", () => {
+    document.querySelectorAll("[data-ticket]").forEach((sample) => {
+      sample.classList.toggle("selected", sample === button);
+    });
+    selectedCase = {
+      execution: button.dataset.execution,
+      outcome: button.dataset.outcome,
+    };
     ticketInput.value = button.dataset.ticket;
+    setRunButtonLabel(
+      selectedCase.execution === "mock" ? "Run mock graph" : "Run live workflow",
+    );
     ticketInput.focus();
   });
+});
+
+ticketInput.addEventListener("input", () => {
+  selectedCase = null;
+  document.querySelectorAll("[data-ticket]").forEach((sample) => {
+    sample.classList.remove("selected");
+  });
+  setRunButtonLabel("Run live workflow");
 });
 
 form.addEventListener("submit", async (event) => {
@@ -121,46 +174,60 @@ form.addEventListener("submit", async (event) => {
   const ticket = ticketInput.value.trim();
   const apiKey = apiKeyInput.value.trim();
   const model = modelInput.value.trim();
-  if (!ticket || !apiKey || !model) return;
+  const mockMode = selectedCase?.execution === "mock";
+  if (!ticket || !model) return;
+  if (!apiKey && !mockMode) {
+    errorOutput.textContent = "Enter an OpenRouter key or choose one of the Without key cases.";
+    errorOutput.hidden = false;
+    return;
+  }
 
   runButton.disabled = true;
-  runButton.firstChild.textContent = "Calling OpenRouter ";
+  setRunButtonLabel(mockMode ? "Running mock graph" : "Calling OpenRouter");
   errorOutput.hidden = true;
-  nodes.forEach((node) => node.classList.remove("executed"));
+  resetGraph();
   result.hidden = true;
   emptyState.hidden = false;
 
   try {
-    nodes[0].classList.add("executed");
-    const classification = await classifyTicket(apiKey, model, ticket);
-    nodes[1].classList.add("executed");
+    setNodeExecuted(trunkNodes[0]);
 
-    const route = classification.confidence < 0.7 ? "escalate" : "respond";
+    const classification = mockMode
+      ? getMockClassification(selectedCase.outcome)
+      : await classifyTicket(apiKey, model, ticket);
+    if (mockMode) await wait(320);
+    setNodeExecuted(trunkNodes[1]);
+
+    const route = selectRoute(classification, selectedCase?.outcome);
     const finalNode = route === "respond" ? "draft_response" : "escalate_ticket";
-    nodes[2].classList.add("executed");
+    if (mockMode) await wait(320);
+    setNodeExecuted(trunkNodes[2]);
 
-    const generatedResponse = await draftResponse(
-      apiKey,
-      model,
+    const generatedResponse = mockMode
+      ? getMockResponse(route)
+      : await draftResponse(apiKey, model, ticket, classification, route);
+    if (mockMode) await wait(320);
+    setNodeExecuted(route === "respond" ? respondNode : escalateNode);
+
+    const graphState = buildGraphState({
       ticket,
       classification,
       route,
-    );
-    nodes[3].classList.add("executed");
-
-    const graphState = {
-      ticket,
-      ...classification,
-      route,
-      draft_response: generatedResponse,
-      trace: ["receive_ticket", "classify_ticket", "select_route", finalNode],
-    };
+      generatedResponse,
+      mockMode,
+      requestedOutcome: selectedCase?.outcome,
+      finalNode,
+    });
 
     stateOutput.textContent = JSON.stringify(graphState, null, 2);
     categoryOutput.textContent = graphState.category;
     confidenceOutput.textContent = `${Math.round(graphState.confidence * 100)}%`;
     routeOutput.textContent = graphState.route;
     draftOutput.textContent = graphState.draft_response;
+    traceOutput.textContent = graphState.trace.join(" → ");
+    executionModeOutput.textContent = mockMode
+      ? `Mock · ${route}`
+      : `Live · ${route}`;
     emptyState.hidden = true;
     result.hidden = false;
     result.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -168,7 +235,7 @@ form.addEventListener("submit", async (event) => {
     errorOutput.textContent = error instanceof Error ? error.message : "The workflow failed.";
     errorOutput.hidden = false;
   } finally {
-    runButton.firstChild.textContent = "Run live workflow ";
+    setRunButtonLabel(mockMode ? "Run mock graph" : "Run live workflow");
     runButton.disabled = false;
   }
 });

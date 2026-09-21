@@ -21,10 +21,14 @@ def classify_ticket(state: SupportState) -> SupportState:
     ticket = state["ticket"].lower()
     billing_terms = ("charge", "charged", "invoice", "payment", "refund", "subscription")
     technical_terms = ("login", "sign in", "password", "error", "broken", "locked")
+    has_billing_signal = any(term in ticket for term in billing_terms)
+    has_technical_signal = any(term in ticket for term in technical_terms)
 
-    if any(term in ticket for term in billing_terms):
+    if has_billing_signal and has_technical_signal:
+        category, confidence = "general", 0.46
+    elif has_billing_signal:
         category, confidence = "billing", 0.94
-    elif any(term in ticket for term in technical_terms):
+    elif has_technical_signal:
         category, confidence = "technical", 0.92
     else:
         category, confidence = "general", 0.58

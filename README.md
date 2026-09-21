@@ -11,7 +11,9 @@ when changes reach `main`. It mirrors the implemented workflow in browser-only
 JavaScript and calls OpenRouter directly with a visitor-provided API key, so no
 backend is required. The key remains in the browser tab, is not persisted, and is
 sent only to OpenRouter. The Python app remains the source of truth for actual
-LangGraph behavior.
+LangGraph behavior. The page provides four explicit cases: live response and live
+human review with a key, plus mock response and mock human review without a key.
+Each case highlights its selected conditional branch and resulting state.
 
 ## Local setup
 
@@ -33,3 +35,5 @@ The application receives and classifies a customer ticket, routes it through
 explicit graph nodes, drafts a response, and escalates low-confidence requests.
 The current classifier and responses are deterministic demo rules. A later exercise
 will replace them with LangChain model calls while preserving the graph structure.
+The no-key fixture combines billing and account-access signals so the graph takes
+the tested escalation branch instead of the normal response branch.
