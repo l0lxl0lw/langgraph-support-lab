@@ -1,4 +1,4 @@
-# Support Agent Demo
+# LangGraph Support Lab
 
 A browser-based project for learning how LangChain model components fit inside a
 LangGraph support workflow.
@@ -6,7 +6,7 @@ LangGraph support workflow.
 ## Hosted demo
 
 The static demo is deployed to
-[l0lxl0lw.github.io/support-agent-demo](https://l0lxl0lw.github.io/support-agent-demo/)
+[l0lxl0lw.github.io/langgraph-support-lab](https://l0lxl0lw.github.io/langgraph-support-lab/)
 when changes reach `main`. It mirrors the implemented workflow in browser-only
 JavaScript and calls OpenRouter directly with a visitor-provided API key, so no
 backend is required. The key remains in the browser tab, is not persisted, and is
