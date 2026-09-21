@@ -41,8 +41,12 @@ with workflow_column:
         category.metric("Category", result["category"].title())
         confidence.metric("Confidence", f"{result['confidence']:.0%}")
         route.metric("Decision", result["route"].title())
-        st.subheader("Draft response")
-        st.write(result["draft_response"])
+        if result["route"] == "respond":
+            st.subheader("Draft response")
+            st.write(result["draft_response"])
+        else:
+            st.subheader("Human review handoff")
+            st.write(result["escalation_note"])
         if result.get("escalation_reason"):
             st.warning(result["escalation_reason"])
         st.caption(f"{len(result['trace'])} nodes executed")

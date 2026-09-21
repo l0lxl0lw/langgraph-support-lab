@@ -9,6 +9,7 @@ class SupportState(TypedDict, total=False):
     confidence: float
     route: Literal["respond", "escalate"]
     draft_response: str
+    escalation_note: str
     escalation_reason: str
     trace: list[str]
 
@@ -71,9 +72,9 @@ def draft_response(state: SupportState) -> SupportState:
 
 def escalate_ticket(state: SupportState) -> SupportState:
     return {
-        "draft_response": (
-            "Thanks for contacting support. A specialist needs to review this request "
-            "before we respond."
+        "escalation_note": (
+            "Classification is uncertain or crosses support domains. Assign this ticket "
+            "to a specialist for human review."
         ),
         "escalation_reason": "Classification confidence is below the response threshold.",
         "trace": [*state.get("trace", []), "escalate_ticket"],

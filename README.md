@@ -11,9 +11,10 @@ when changes reach `main`. It mirrors the implemented workflow in browser-only
 JavaScript and calls OpenRouter directly with a visitor-provided API key, so no
 backend is required. The key remains in the browser tab, is not persisted, and is
 sent only to OpenRouter. The Python app remains the source of truth for actual
-LangGraph behavior. The page provides four explicit cases: live response and live
-human review with a key, plus mock response and mock human review without a key.
-Each case highlights its selected conditional branch and resulting state.
+LangGraph behavior. Four distinct use cases cover both branches: live duplicate
+charge and account takeover cases use a key; mock password reset and refund plus
+lockout cases do not. Each case highlights its selected conditional branch and
+resulting state.
 
 ## Local setup
 
@@ -37,3 +38,5 @@ The current classifier and responses are deterministic demo rules. A later exerc
 will replace them with LangChain model calls while preserving the graph structure.
 The no-key fixture combines billing and account-access signals so the graph takes
 the tested escalation branch instead of the normal response branch.
+Response branches produce `draft_response`; escalation branches instead produce an
+`escalation_note` for the human-review handoff.

@@ -1,6 +1,6 @@
-export function getMockClassification(outcome) {
-  return outcome === "respond"
-    ? { category: "billing", confidence: 0.94 }
+export function getMockClassification(fixture) {
+  return fixture === "password-reset"
+    ? { category: "technical", confidence: 0.92 }
     : { category: "general", confidence: 0.46 };
 }
 
@@ -9,10 +9,13 @@ export function selectRoute(classification, requestedOutcome) {
     (classification.confidence < 0.7 ? "escalate" : "respond");
 }
 
-export function getMockResponse(route) {
-  return route === "respond"
-    ? "Thanks for reporting the duplicate charge. The billing team will review the transaction before making any adjustment."
-    : "This request combines billing and account-access concerns, so the graph routed it to a human specialist instead of drafting an automated resolution.";
+export function getMockResponse(route, category) {
+  if (route === "escalate") {
+    return "Billing and account-access signals overlap. Assign this ticket to an account-security specialist for human review.";
+  }
+  return category === "technical"
+    ? "Please request a new password-reset link and open it in the same browser where you started the reset. Contact support if the new link also expires."
+    : "Thanks for reporting the duplicate charge. The billing team will review the transaction before making any adjustment.";
 }
 
 export function buildGraphState({
@@ -24,13 +27,15 @@ export function buildGraphState({
   requestedOutcome,
   finalNode,
 }) {
-  return {
+  const state = {
     ticket,
     ...classification,
     route,
-    draft_response: generatedResponse,
     execution_mode: mockMode ? "mock_fixture" : "live_openrouter",
     requested_outcome: requestedOutcome || "dynamic",
     trace: ["receive_ticket", "classify_ticket", "select_route", finalNode],
   };
+  if (route === "respond") state.draft_response = generatedResponse;
+  else state.escalation_note = generatedResponse;
+  return state;
 }

@@ -39,7 +39,8 @@ def test_workflow_escalates_low_confidence_ticket() -> None:
     assert result["category"] == "general"
     assert result["confidence"] == 0.58
     assert result["route"] == "escalate"
-    assert "specialist" in result["draft_response"]
+    assert "specialist" in result["escalation_note"]
+    assert "draft_response" not in result
     assert result["trace"][-1] == "escalate_ticket"
 
 
@@ -54,6 +55,8 @@ def test_workflow_escalates_mixed_signal_demo_ticket() -> None:
     assert result["category"] == "general"
     assert result["confidence"] == 0.46
     assert result["route"] == "escalate"
+    assert "specialist" in result["escalation_note"]
+    assert "draft_response" not in result
     assert result["trace"] == [
         "receive_ticket",
         "classify_ticket",

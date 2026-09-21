@@ -139,36 +139,20 @@ h1 {
   font-weight: 800;
 }
 
-.case-matrix {
-  display: grid;
-  gap: 13px;
-  margin-bottom: 22px;
-}
-
-.case-group {
-  padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  background: rgba(250, 248, 241, 0.7);
-}
-
-.case-label {
-  display: block;
-  margin-bottom: 9px;
-  color: var(--muted);
-  font-size: 0.64rem;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
 .samples {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
+.samples.case-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 22px;
+}
+
 .samples button {
+  text-align: left;
   padding: 8px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -188,13 +172,20 @@ h1 {
   background: rgba(228, 95, 58, 0.06);
 }
 
-.samples .mock-sample small {
+.samples button small {
   margin-left: 5px;
-  color: var(--green);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.samples .mock-sample small {
+  color: var(--green);
+}
+
+.samples .live-sample small {
+  color: var(--accent);
 }
 
 label {
@@ -503,6 +494,10 @@ footer p {
   }
 
   .api-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .samples.case-grid {
     grid-template-columns: 1fr;
   }
 

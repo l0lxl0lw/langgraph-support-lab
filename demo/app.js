@@ -15,7 +15,8 @@ const stateOutput = document.querySelector("#state");
 const categoryOutput = document.querySelector("#category");
 const confidenceOutput = document.querySelector("#confidence");
 const routeOutput = document.querySelector("#route");
-const draftOutput = document.querySelector("#draft-response");
+const workflowOutput = document.querySelector("#workflow-output");
+const outputLabel = document.querySelector("#output-label");
 const traceOutput = document.querySelector("#trace");
 const executionModeOutput = document.querySelector("#execution-mode");
 const errorOutput = document.querySelector("#error-message");
@@ -151,6 +152,7 @@ document.querySelectorAll("[data-ticket]").forEach((button) => {
     selectedCase = {
       execution: button.dataset.execution,
       outcome: button.dataset.outcome,
+      fixture: button.dataset.fixture,
     };
     ticketInput.value = button.dataset.ticket;
     setRunButtonLabel(
@@ -193,7 +195,7 @@ form.addEventListener("submit", async (event) => {
     setNodeExecuted(trunkNodes[0]);
 
     const classification = mockMode
-      ? getMockClassification(selectedCase.outcome)
+      ? getMockClassification(selectedCase.fixture)
       : await classifyTicket(apiKey, model, ticket);
     if (mockMode) await wait(320);
     setNodeExecuted(trunkNodes[1]);
@@ -204,7 +206,7 @@ form.addEventListener("submit", async (event) => {
     setNodeExecuted(trunkNodes[2]);
 
     const generatedResponse = mockMode
-      ? getMockResponse(route)
+      ? getMockResponse(route, classification.category)
       : await draftResponse(apiKey, model, ticket, classification, route);
     if (mockMode) await wait(320);
     setNodeExecuted(route === "respond" ? respondNode : escalateNode);
@@ -223,7 +225,8 @@ form.addEventListener("submit", async (event) => {
     categoryOutput.textContent = graphState.category;
     confidenceOutput.textContent = `${Math.round(graphState.confidence * 100)}%`;
     routeOutput.textContent = graphState.route;
-    draftOutput.textContent = graphState.draft_response;
+    outputLabel.textContent = route === "respond" ? "Draft response" : "Human review handoff";
+    workflowOutput.textContent = graphState.draft_response || graphState.escalation_note;
     traceOutput.textContent = graphState.trace.join(" → ");
     executionModeOutput.textContent = mockMode
       ? `Mock · ${route}`

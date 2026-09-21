@@ -56,51 +56,47 @@
             Live runs make two model calls and may use account credits.
           </p>
 
-          <div class="case-matrix" aria-label="Workflow demo cases">
-            <div class="case-group">
-              <span class="case-label">With key · Live OpenRouter</span>
-              <div class="samples">
-                <button
-                  type="button"
-                  data-execution="live"
-                  data-outcome="respond"
-                  data-ticket="I was charged twice for my subscription."
-                >
-                  Duplicate charge
-                </button>
-                <button
-                  type="button"
-                  data-execution="live"
-                  data-outcome="escalate"
-                  data-ticket="A refund is missing and I am locked out of the account. A manager needs to review this today."
-                >
-                  Refund + account lockout
-                </button>
-              </div>
-            </div>
-            <div class="case-group">
-              <span class="case-label">Without key · Mock fixture</span>
-              <div class="samples">
-                <button
-                  class="mock-sample"
-                  type="button"
-                  data-execution="mock"
-                  data-outcome="respond"
-                  data-ticket="I was charged twice for my subscription."
-                >
-                  Duplicate charge
-                </button>
-                <button
-                  class="mock-sample"
-                  type="button"
-                  data-execution="mock"
-                  data-outcome="escalate"
-                  data-ticket="A refund is missing and I am locked out of the account. A manager needs to review this today."
-                >
-                  Refund + account lockout
-                </button>
-              </div>
-            </div>
+          <div class="samples case-grid" aria-label="Workflow demo cases">
+            <button
+              class="live-sample"
+              type="button"
+              data-execution="live"
+              data-outcome="respond"
+              data-fixture="duplicate-charge"
+              data-ticket="I was charged twice for my subscription."
+            >
+              Duplicate charge <small>Live key</small>
+            </button>
+            <button
+              class="live-sample"
+              type="button"
+              data-execution="live"
+              data-outcome="escalate"
+              data-fixture="account-takeover"
+              data-ticket="I do not recognize recent account activity and my password was changed. Please freeze access and have a specialist review it."
+            >
+              Account takeover <small>Live key</small>
+            </button>
+            <button
+              class="mock-sample"
+              type="button"
+              data-execution="mock"
+              data-outcome="respond"
+              data-fixture="password-reset"
+              data-ticket="My password reset link expired and I still cannot sign in."
+            >
+              Password reset <small>No key</small>
+            </button>
+            <button
+              class="mock-sample"
+              type="button"
+              data-execution="mock"
+              data-outcome="escalate"
+              data-fixture="refund-lockout"
+              data-ticket="A refund is missing and I am locked out of the account. A manager needs to review this today."
+            >
+              Refund + lockout <small>No key</small>
+            </button>
           </div>
 
           <label for="ticket">Customer message</label>
@@ -175,8 +171,8 @@
               <div><span>Confidence</span><strong id="confidence"></strong></div>
               <div><span>Decision</span><strong id="route"></strong></div>
             </div>
-            <p class="result-label">Draft response</p>
-            <p class="draft-response" id="draft-response"></p>
+            <p class="result-label" id="output-label">Workflow output</p>
+            <p class="draft-response" id="workflow-output"></p>
             <p class="result-label">Graph state</p>
             <pre><code id="state"></code></pre>
           </div>
