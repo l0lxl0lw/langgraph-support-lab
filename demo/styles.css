@@ -24,6 +24,7 @@ body {
 }
 
 button,
+input,
 textarea {
   font: inherit;
 }
@@ -166,9 +167,9 @@ label {
   font-weight: 750;
 }
 
+input,
 textarea {
   width: 100%;
-  resize: vertical;
   padding: 15px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -178,9 +179,33 @@ textarea {
   line-height: 1.55;
 }
 
+textarea {
+  resize: vertical;
+}
+
+input:focus,
 textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(228, 95, 58, 0.1);
+}
+
+.api-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.api-settings input {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+}
+
+.privacy-note {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.5;
 }
 
 .run-button {
@@ -201,9 +226,25 @@ textarea:focus {
   background: var(--accent);
 }
 
+.run-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.error-message {
+  margin: 12px 0 0;
+  padding: 11px 13px;
+  border: 1px solid rgba(180, 54, 40, 0.25);
+  border-radius: 10px;
+  color: #8e2e22;
+  background: rgba(180, 54, 40, 0.07);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
 .graph {
   display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
+  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
   gap: 9px;
   align-items: center;
 }
@@ -235,12 +276,14 @@ textarea:focus {
   font-size: 0.88rem;
 }
 
-.node.active {
+.node.executed {
   border-color: rgba(35, 101, 75, 0.45);
   background: rgba(35, 101, 75, 0.06);
+  transform: translateY(-2px);
+  transition: 180ms ease;
 }
 
-.node.active span {
+.node.executed span {
   color: var(--green);
 }
 
@@ -273,6 +316,46 @@ textarea:focus {
   gap: 20px;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.result-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.result-summary div {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+}
+
+.result-summary span,
+.result-summary strong {
+  display: block;
+}
+
+.result-summary span {
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-summary strong {
+  font-size: 0.86rem;
+  text-transform: capitalize;
+}
+
+.draft-response {
+  margin: 0 0 24px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.6;
 }
 
 .complete {
@@ -345,6 +428,14 @@ footer p {
 
   footer {
     display: block;
+  }
+
+  .result-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .api-settings {
+    grid-template-columns: 1fr;
   }
 
   footer p + p {

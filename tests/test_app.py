@@ -23,5 +23,7 @@ def test_app_displays_workflow_result() -> None:
 
     assert not app.exception
     assert app.success[0].value == "Workflow complete"
-    assert app.metric[0].value == "1"
-    assert app.code[0].value == "receive_ticket"
+    assert app.metric[0].value == "Billing"
+    assert app.metric[1].value == "94%"
+    assert app.metric[2].value == "Respond"
+    assert app.code[0].value.endswith("draft_response")

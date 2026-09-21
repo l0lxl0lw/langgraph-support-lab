@@ -37,7 +37,15 @@ with workflow_column:
     result = st.session_state.get("workflow_result")
     if result:
         st.success("Workflow complete")
-        st.metric("Nodes executed", len(result["trace"]))
+        category, confidence, route = st.columns(3)
+        category.metric("Category", result["category"].title())
+        confidence.metric("Confidence", f"{result['confidence']:.0%}")
+        route.metric("Decision", result["route"].title())
+        st.subheader("Draft response")
+        st.write(result["draft_response"])
+        if result.get("escalation_reason"):
+            st.warning(result["escalation_reason"])
+        st.caption(f"{len(result['trace'])} nodes executed")
         st.code(" -> ".join(result["trace"]), language=None)
         with st.expander("Graph state", expanded=True):
             st.json(result)

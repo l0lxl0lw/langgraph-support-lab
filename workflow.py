@@ -9,6 +9,7 @@ class SupportState(TypedDict, total=False):
     confidence: float
     route: Literal["respond", "escalate"]
     draft_response: str
+    escalation_reason: str
     trace: list[str]
 
 
@@ -16,11 +17,82 @@ def receive_ticket(state: SupportState) -> SupportState:
     return {"trace": [*state.get("trace", []), "receive_ticket"]}
 
 
+def classify_ticket(state: SupportState) -> SupportState:
+    ticket = state["ticket"].lower()
+    billing_terms = ("charge", "charged", "invoice", "payment", "refund", "subscription")
+    technical_terms = ("login", "sign in", "password", "error", "broken", "locked")
+
+    if any(term in ticket for term in billing_terms):
+        category, confidence = "billing", 0.94
+    elif any(term in ticket for term in technical_terms):
+        category, confidence = "technical", 0.92
+    else:
+        category, confidence = "general", 0.58
+
+    return {
+        "category": category,
+        "confidence": confidence,
+        "trace": [*state.get("trace", []), "classify_ticket"],
+    }
+
+
+def select_route(state: SupportState) -> SupportState:
+    should_escalate = state["confidence"] < 0.7
+    return {
+        "route": "escalate" if should_escalate else "respond",
+        "trace": [*state.get("trace", []), "select_route"],
+    }
+
+
+def route_ticket(state: SupportState) -> Literal["respond", "escalate"]:
+    return state["route"]
+
+
+def draft_response(state: SupportState) -> SupportState:
+    responses = {
+        "billing": (
+            "Thanks for reporting this billing issue. I've flagged the charge for "
+            "review, and our billing team will verify it before making any adjustment."
+        ),
+        "technical": (
+            "Thanks for the details. Please try signing in from a private browser window. "
+            "If the issue continues, support will review your account access."
+        ),
+    }
+    return {
+        "draft_response": responses[state["category"]],
+        "trace": [*state.get("trace", []), "draft_response"],
+    }
+
+
+def escalate_ticket(state: SupportState) -> SupportState:
+    return {
+        "draft_response": (
+            "Thanks for contacting support. A specialist needs to review this request "
+            "before we respond."
+        ),
+        "escalation_reason": "Classification confidence is below the response threshold.",
+        "trace": [*state.get("trace", []), "escalate_ticket"],
+    }
+
+
 def build_workflow():
     builder = StateGraph(SupportState)
     builder.add_node("receive_ticket", receive_ticket)
+    builder.add_node("classify_ticket", classify_ticket)
+    builder.add_node("select_route", select_route)
+    builder.add_node("draft_response", draft_response)
+    builder.add_node("escalate_ticket", escalate_ticket)
     builder.add_edge(START, "receive_ticket")
-    builder.add_edge("receive_ticket", END)
+    builder.add_edge("receive_ticket", "classify_ticket")
+    builder.add_edge("classify_ticket", "select_route")
+    builder.add_conditional_edges(
+        "select_route",
+        route_ticket,
+        {"respond": "draft_response", "escalate": "escalate_ticket"},
+    )
+    builder.add_edge("draft_response", END)
+    builder.add_edge("escalate_ticket", END)
     return builder.compile()
 
 

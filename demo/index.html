@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Interactive browser demo of a support workflow built with LangGraph."
+      content="Interactive OpenRouter-powered demo of a support workflow built with LangGraph."
     />
     <title>Support Agent Lab</title>
     <link rel="stylesheet" href="styles.css" />
@@ -18,8 +18,8 @@
           <p class="eyebrow">LANGGRAPH LEARNING PROJECT</p>
           <h1>See a support ticket move through the graph.</h1>
           <p class="lede">
-            This hosted demo mirrors the current Python workflow in the browser.
-            It uses mock execution, so no API key or backend is required.
+            Bring your own OpenRouter key and watch a live model classify, route,
+            and answer a support request through the workflow.
           </p>
         </div>
         <div class="mode"><span></span> Demo mode</div>
@@ -31,9 +31,31 @@
             <p class="step-number">01</p>
             <div>
               <h2>Submit a ticket</h2>
-              <p>Try a sample or enter your own customer message.</p>
+              <p>Configure OpenRouter, then try a sample or enter your own message.</p>
             </div>
           </div>
+
+          <div class="api-settings">
+            <div>
+              <label for="api-key">OpenRouter API key</label>
+              <input
+                id="api-key"
+                type="password"
+                placeholder="sk-or-v1-..."
+                autocomplete="new-password"
+                spellcheck="false"
+                required
+              />
+            </div>
+            <div>
+              <label for="model">Model</label>
+              <input id="model" value="openai/gpt-4o-mini" required />
+            </div>
+          </div>
+          <p class="privacy-note">
+            Your key stays in this tab's memory and is sent only to OpenRouter.
+            Each run makes two model calls and may use account credits.
+          </p>
 
           <div class="samples" aria-label="Sample tickets">
             <button type="button" data-ticket="I was charged twice for my subscription.">
@@ -51,7 +73,8 @@
             placeholder="Describe the customer's problem..."
             required
           ></textarea>
-          <button class="run-button" type="submit">Run workflow <span>→</span></button>
+          <button class="run-button" type="submit">Run live workflow <span>→</span></button>
+          <p class="error-message" id="error-message" role="alert" hidden></p>
         </form>
 
         <section class="inspector" aria-live="polite">
@@ -64,22 +87,28 @@
           </div>
 
           <div class="graph" aria-label="Workflow stages">
-            <article class="node active" id="receive-node">
-              <span>Implemented</span>
+            <article class="node implemented" id="receive-node">
+              <span>Ready</span>
               <strong>Receive ticket</strong>
               <small>receive_ticket</small>
             </article>
             <div class="edge">→</div>
-            <article class="node future">
-              <span>Next</span>
+            <article class="node implemented" id="classify-node">
+              <span>Ready</span>
               <strong>Classify</strong>
-              <small>LangChain model</small>
+              <small>OpenRouter call</small>
             </article>
             <div class="edge">→</div>
-            <article class="node future">
-              <span>Planned</span>
+            <article class="node implemented" id="route-node">
+              <span>Ready</span>
               <strong>Route</strong>
-              <small>conditional edge</small>
+              <small>select_route</small>
+            </article>
+            <div class="edge">→</div>
+            <article class="node implemented" id="resolve-node">
+              <span>Ready</span>
+              <strong>Resolve</strong>
+              <small>OpenRouter call</small>
             </article>
           </div>
 
@@ -95,6 +124,13 @@
               </div>
               <span class="complete">Complete</span>
             </div>
+            <div class="result-summary">
+              <div><span>Category</span><strong id="category"></strong></div>
+              <div><span>Confidence</span><strong id="confidence"></strong></div>
+              <div><span>Decision</span><strong id="route"></strong></div>
+            </div>
+            <p class="result-label">Draft response</p>
+            <p class="draft-response" id="draft-response"></p>
             <p class="result-label">Graph state</p>
             <pre><code id="state"></code></pre>
           </div>
@@ -102,8 +138,8 @@
       </section>
 
       <footer>
-        <p>Hosted simulation</p>
-        <p>The real graph runs in Python with LangGraph and Streamlit.</p>
+        <p>Live OpenRouter demo</p>
+        <p>Keys are never stored; Python LangGraph remains the workflow source of truth.</p>
       </footer>
     </main>
   </body>
