@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Interactive browser demo of a support workflow built with LangGraph."
+    />
+    <title>Support Agent Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">LANGGRAPH LEARNING PROJECT</p>
+          <h1>See a support ticket move through the graph.</h1>
+          <p class="lede">
+            This hosted demo mirrors the current Python workflow in the browser.
+            It uses mock execution, so no API key or backend is required.
+          </p>
+        </div>
+        <div class="mode"><span></span> Demo mode</div>
+      </header>
+
+      <section class="workspace">
+        <form class="composer" id="ticket-form">
+          <div class="section-heading">
+            <p class="step-number">01</p>
+            <div>
+              <h2>Submit a ticket</h2>
+              <p>Try a sample or enter your own customer message.</p>
+            </div>
+          </div>
+
+          <div class="samples" aria-label="Sample tickets">
+            <button type="button" data-ticket="I was charged twice for my subscription.">
+              Billing issue
+            </button>
+            <button type="button" data-ticket="I cannot sign in after resetting my password.">
+              Login issue
+            </button>
+          </div>
+
+          <label for="ticket">Customer message</label>
+          <textarea
+            id="ticket"
+            rows="7"
+            placeholder="Describe the customer's problem..."
+            required
+          ></textarea>
+          <button class="run-button" type="submit">Run workflow <span>→</span></button>
+        </form>
+
+        <section class="inspector" aria-live="polite">
+          <div class="section-heading">
+            <p class="step-number">02</p>
+            <div>
+              <h2>Inspect execution</h2>
+              <p>The trace and shared state update after every run.</p>
+            </div>
+          </div>
+
+          <div class="graph" aria-label="Workflow stages">
+            <article class="node active" id="receive-node">
+              <span>Implemented</span>
+              <strong>Receive ticket</strong>
+              <small>receive_ticket</small>
+            </article>
+            <div class="edge">→</div>
+            <article class="node future">
+              <span>Next</span>
+              <strong>Classify</strong>
+              <small>LangChain model</small>
+            </article>
+            <div class="edge">→</div>
+            <article class="node future">
+              <span>Planned</span>
+              <strong>Route</strong>
+              <small>conditional edge</small>
+            </article>
+          </div>
+
+          <div class="empty-state" id="empty-state">
+            Run a ticket to produce the first graph state.
+          </div>
+
+          <div class="result" id="result" hidden>
+            <div class="result-header">
+              <div>
+                <p class="result-label">Execution trace</p>
+                <strong id="trace">receive_ticket</strong>
+              </div>
+              <span class="complete">Complete</span>
+            </div>
+            <p class="result-label">Graph state</p>
+            <pre><code id="state"></code></pre>
+          </div>
+        </section>
+      </section>
+
+      <footer>
+        <p>Hosted simulation</p>
+        <p>The real graph runs in Python with LangGraph and Streamlit.</p>
+      </footer>
+    </main>
+  </body>
+</html>
